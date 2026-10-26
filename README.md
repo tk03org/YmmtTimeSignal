@@ -82,18 +82,6 @@
 - Windows 10 / 11 (64bit)
 - .NET Framework 4.8（Windows 10/11には標準搭載されているため追加導入は不要です）
 
----
-
-## ビルド方法 (開発者向け)
-
-.NET SDK がインストールされた環境で以下を実行します：
-
-```powershell
-# ビルド
-dotnet build src/YmmtTimeSignal/YmmtTimeSignal.csproj -c Release
-
-# 実行ファイルは bin/Release/ 配下に出力されます
-```
 
 ---
 
