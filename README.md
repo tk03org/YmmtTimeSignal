@@ -2,6 +2,9 @@
 
 夢限大みゅーたいぷ（ゆめみた）各メンバーの時報ボイスを、指定の間隔（毎時0分など）でランダム再生するWindowsタスクトレイ常駐ツールです。
 
+[![Download ZIP](https://img.shields.io/badge/Download-v1.0.0%20(ZIP)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.0.0/YmmtTimeSignal_v1.0.0.zip)
+[![Releases](https://img.shields.io/badge/Releases-v1.0.0-0969da?style=for-the-badge)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.0.0)
+
 > [!IMPORTANT]
 > **音声データに関する重要なお知らせ**  
 > 本リポジトリには音声ファイル（.wav）は含まれていません。  
@@ -40,6 +43,15 @@
 - 千石ユノ (`yuno` / `b5879957`)
 
 ※ 全員の音源が揃っていなくても動作します。所持しているキャラクターのフォルダのみ配置してください。
+
+---
+
+## ダウンロード
+
+最新の実行ファイル（ZIP形式）は以下から直接ダウンロードできます：
+
+- 📥 **[YmmtTimeSignal_v1.0.0.zip をダウンロード](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.0.0/YmmtTimeSignal_v1.0.0.zip)**
+- 📋 リリースノート・変更履歴は [Releases (v1.0.0)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.0.0) をご覧ください。
 
 ---
 
