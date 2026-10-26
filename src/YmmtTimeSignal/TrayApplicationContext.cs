@@ -73,6 +73,10 @@ namespace YmmtTimeSignal
         private void ClockTimer_Tick(object sender, EventArgs e)
         {
             var now = DateTime.Now;
+
+            // Check if any one-time schedule rule has expired
+            CheckAndExpireRules(now);
+
             int interval = _settings.IntervalMinutes > 0 ? _settings.IntervalMinutes : 60;
             bool isTargetMinute = (interval == 60) ? (now.Minute == 0) : (now.Minute % interval == 0);
 
@@ -87,11 +91,53 @@ namespace YmmtTimeSignal
                 if (_lastPlayedSlotKey != slotKey)
                 {
                     _lastPlayedSlotKey = slotKey;
-                    if (!_settings.IsMuted)
+                    bool inQuietHours = IsCurrentlyInQuietHours(now, out _);
+                    if (!_settings.IsMuted && !inQuietHours)
                     {
                         PlayHourlyChime(now.Hour);
                     }
                 }
+            }
+        }
+
+        public bool IsCurrentlyInQuietHours(DateTime now, out string activeSummary)
+        {
+            activeSummary = null;
+            if (_settings.QuietRules != null)
+            {
+                for (int i = 0; i < _settings.QuietRules.Count; i++)
+                {
+                    var rule = _settings.QuietRules[i];
+                    if (rule.IsMutedAt(now))
+                    {
+                        activeSummary = rule.GetSummaryText(i + 1);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void CheckAndExpireRules(DateTime now)
+        {
+            if (_settings.QuietRules == null) return;
+            bool changed = false;
+
+            for (int i = 0; i < _settings.QuietRules.Count; i++)
+            {
+                var rule = _settings.QuietRules[i];
+                if (rule.HasExpired(now))
+                {
+                    rule.Enabled = false;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _settings.Save(_settingsPath);
+                RebuildContextMenu();
+                UpdateTrayIcon();
             }
         }
 
@@ -186,7 +232,7 @@ namespace YmmtTimeSignal
             _contextMenu.Items.Clear();
 
             // Header title
-            var titleItem = new ToolStripMenuItem("夢限大みゅーたいぷ 時報ツール")
+            var titleItem = new ToolStripMenuItem("YmmtTimeSignal v1.1.0")
             {
                 Enabled = false,
                 Font = new Font(SystemFonts.MenuFont, FontStyle.Bold)
@@ -292,6 +338,39 @@ namespace YmmtTimeSignal
             }
             _contextMenu.Items.Add(volumeMenu);
 
+            // Quiet Schedule submenu
+            int enabledQuietCount = _settings.QuietRules != null ? _settings.QuietRules.Count(r => r.Enabled) : 0;
+            var quietMenu = new ToolStripMenuItem($"🌙 指定時間停止 (現在: {enabledQuietCount}件有効)");
+            if (_settings.QuietRules != null)
+            {
+                for (int i = 0; i < _settings.QuietRules.Count; i++)
+                {
+                    int ruleIdx = i;
+                    var rule = _settings.QuietRules[i];
+                    var ruleItem = new ToolStripMenuItem(rule.GetSummaryText(ruleIdx + 1))
+                    {
+                        Checked = rule.Enabled
+                    };
+                    ruleItem.Click += (s, e) =>
+                    {
+                        rule.Enabled = !rule.Enabled;
+                        if (rule.Enabled)
+                        {
+                            rule.Activate(DateTime.Now);
+                        }
+                        _settings.Save(_settingsPath);
+                        RebuildContextMenu();
+                        UpdateTrayIcon();
+                    };
+                    quietMenu.DropDownItems.Add(ruleItem);
+                }
+            }
+            quietMenu.DropDownItems.Add(new ToolStripSeparator());
+            var openSettingsItem = new ToolStripMenuItem("⚙ 時間帯の設定を開く...");
+            openSettingsItem.Click += (s, e) => OpenQuietScheduleDialog();
+            quietMenu.DropDownItems.Add(openSettingsItem);
+            _contextMenu.Items.Add(quietMenu);
+
             // Mute toggle
             var muteItem = new ToolStripMenuItem("🔇 一時ミュート")
             {
@@ -336,11 +415,38 @@ namespace YmmtTimeSignal
             _contextMenu.Items.Add(exitItem);
         }
 
+        private void OpenQuietScheduleDialog()
+        {
+            using (var dlg = new QuietScheduleDialog(_settings.QuietRules))
+            {
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    _settings.QuietRules = dlg.ResultRules;
+                    _settings.Save(_settingsPath);
+                    RebuildContextMenu();
+                    UpdateTrayIcon();
+                }
+            }
+        }
+
         private void UpdateTrayIcon()
         {
-            _trayIcon.Text = _settings.IsMuted
-                ? "夢限大みゅーたいぷ 時報ツール (ミュート中)"
-                : "夢限大みゅーたいぷ 時報ツール";
+            bool inQuiet = IsCurrentlyInQuietHours(DateTime.Now, out string quietSummary);
+
+            if (_settings.IsMuted)
+            {
+                _trayIcon.Text = "夢限大みゅーたいぷ 時報ツール (一時ミュート中)";
+            }
+            else if (inQuiet)
+            {
+                string text = $"夢限大みゅーたいぷ 時報ツール (指定時間停止中: {quietSummary})";
+                if (text.Length > 63) text = text.Substring(0, 60) + "...";
+                _trayIcon.Text = text;
+            }
+            else
+            {
+                _trayIcon.Text = "夢限大みゅーたいぷ 時報ツール";
+            }
 
             // Draw a 32x32 clock icon with GDI+
             using (var bmp = new Bitmap(32, 32))
@@ -350,7 +456,20 @@ namespace YmmtTimeSignal
                 g.Clear(Color.Transparent);
 
                 // Circle background
-                Color circleColor = _settings.IsMuted ? Color.FromArgb(140, 140, 140) : Color.FromArgb(70, 130, 240);
+                Color circleColor;
+                if (_settings.IsMuted)
+                {
+                    circleColor = Color.FromArgb(140, 140, 140);
+                }
+                else if (inQuiet)
+                {
+                    circleColor = Color.FromArgb(100, 75, 175); // Deep Indigo/Purple
+                }
+                else
+                {
+                    circleColor = Color.FromArgb(70, 130, 240); // Blue
+                }
+
                 using (var brush = new SolidBrush(circleColor))
                 {
                     g.FillEllipse(brush, 2, 2, 27, 27);
@@ -370,6 +489,18 @@ namespace YmmtTimeSignal
                     using (var pen = new Pen(Color.Red, 3f))
                     {
                         g.DrawLine(pen, 4, 4, 27, 27);
+                    }
+                }
+                else if (inQuiet)
+                {
+                    // Draw a subtle crescent moon or pause badge in bottom right corner
+                    using (var moonBrush = new SolidBrush(Color.FromArgb(255, 220, 80)))
+                    {
+                        g.FillEllipse(moonBrush, 17, 17, 12, 12);
+                    }
+                    using (var clipBrush = new SolidBrush(circleColor))
+                    {
+                        g.FillEllipse(clipBrush, 15, 15, 11, 11);
                     }
                 }
 

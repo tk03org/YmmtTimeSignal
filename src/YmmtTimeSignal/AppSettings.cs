@@ -25,6 +25,19 @@ namespace YmmtTimeSignal
         [DataMember(Name = "isMuted")]
         public bool IsMuted { get; set; } = false;
 
+        [DataMember(Name = "quietRules")]
+        public List<QuietScheduleRule> QuietRules { get; set; } = GetDefaultQuietRules();
+
+        public static List<QuietScheduleRule> GetDefaultQuietRules()
+        {
+            return new List<QuietScheduleRule>
+            {
+                new QuietScheduleRule(false, 23, 0, true, 7, 0, false, false, true),
+                new QuietScheduleRule(false, 12, 0, true, 12, 0, false, true, false),
+                new QuietScheduleRule(false, 14, 0, true, 15, 0, false, false, false)
+            };
+        }
+
         public static AppSettings Load(string filePath)
         {
             if (!File.Exists(filePath))
@@ -63,6 +76,15 @@ namespace YmmtTimeSignal
                         if (settings.Volume <= 0)
                         {
                             settings.Volume = 80;
+                        }
+                        if (settings.QuietRules == null)
+                        {
+                            settings.QuietRules = GetDefaultQuietRules();
+                        }
+                        while (settings.QuietRules.Count < 3)
+                        {
+                            var defaults = GetDefaultQuietRules();
+                            settings.QuietRules.Add(defaults[settings.QuietRules.Count]);
                         }
                         return settings;
                     }
