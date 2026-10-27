@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace YmmtTimeSignal
@@ -258,7 +259,7 @@ namespace YmmtTimeSignal
             _contextMenu.Items.Clear();
 
             // Header title
-            var titleItem = new ToolStripMenuItem("YmmtTimeSignal v1.1.1")
+            var titleItem = new ToolStripMenuItem("YmmtTimeSignal v1.1.2")
             {
                 Enabled = false,
                 Font = new Font(SystemFonts.MenuFont, FontStyle.Bold)
@@ -455,6 +456,9 @@ namespace YmmtTimeSignal
             }
         }
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool DestroyIcon(IntPtr handle);
+
         private void UpdateTrayIcon()
         {
             bool inQuiet = IsCurrentlyInQuietHours(DateTime.Now, out string quietSummary);
@@ -474,71 +478,120 @@ namespace YmmtTimeSignal
                 _trayIcon.Text = "夢限大みゅーたいぷ 時報ツール";
             }
 
-            // Draw a 32x32 clock icon with GDI+
+            // Draw a 32x32 UFO or Moon icon with GDI+
             using (var bmp = new Bitmap(32, 32))
             using (var g = Graphics.FromImage(bmp))
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.Clear(Color.Transparent);
 
-                // Circle background
-                Color circleColor;
-                if (_settings.IsMuted)
+                if (inQuiet)
                 {
-                    circleColor = Color.FromArgb(140, 140, 140);
-                }
-                else if (inQuiet)
-                {
-                    circleColor = Color.FromArgb(100, 75, 175); // Deep Indigo/Purple
+                    DrawMoon(g);
                 }
                 else
                 {
-                    circleColor = Color.FromArgb(70, 130, 240); // Blue
+                    DrawUfo(g);
                 }
 
-                using (var brush = new SolidBrush(circleColor))
-                {
-                    g.FillEllipse(brush, 2, 2, 27, 27);
-                }
-
-                using (var pen = new Pen(Color.White, 2f))
-                {
-                    g.DrawEllipse(pen, 2, 2, 27, 27);
-                    // Clock hands
-                    g.DrawLine(pen, 15.5f, 15.5f, 15.5f, 7f);   // 12 o'clock
-                    g.DrawLine(pen, 15.5f, 15.5f, 22f, 15.5f);  // 3 o'clock
-                }
-
-                // If muted, draw red slash
                 if (_settings.IsMuted)
                 {
-                    using (var pen = new Pen(Color.Red, 3f))
-                    {
-                        g.DrawLine(pen, 4, 4, 27, 27);
-                    }
-                }
-                else if (inQuiet)
-                {
-                    // Draw a subtle crescent moon or pause badge in bottom right corner
-                    using (var moonBrush = new SolidBrush(Color.FromArgb(255, 220, 80)))
-                    {
-                        g.FillEllipse(moonBrush, 17, 17, 12, 12);
-                    }
-                    using (var clipBrush = new SolidBrush(circleColor))
-                    {
-                        g.FillEllipse(clipBrush, 15, 15, 11, 11);
-                    }
+                    DrawMuteSlash(g);
                 }
 
                 IntPtr hIcon = bmp.GetHicon();
                 try
                 {
-                    _trayIcon.Icon = Icon.FromHandle(hIcon);
+                    using (var tempIcon = Icon.FromHandle(hIcon))
+                    {
+                        var oldIcon = _trayIcon.Icon;
+                        _trayIcon.Icon = (Icon)tempIcon.Clone();
+                        oldIcon?.Dispose();
+                    }
                 }
                 finally
                 {
-                    // DestroyIcon API could be called, but simple disposal is fine
+                    DestroyIcon(hIcon);
                 }
+            }
+        }
+
+        private void DrawUfo(Graphics g)
+        {
+            // Dome outer: cx=16, cy=13, rx=7.5, ry=6.5
+            using (var bDomeOuter = new SolidBrush(Color.FromArgb(192, 132, 252)))
+            {
+                g.FillEllipse(bDomeOuter, 8.5f, 6.5f, 15f, 13f);
+            }
+
+            // Dome inner: cx=16, cy=13, rx=6.5, ry=5.5
+            using (var bDomeInner = new SolidBrush(Color.FromArgb(168, 85, 247)))
+            {
+                g.FillEllipse(bDomeInner, 9.5f, 7.5f, 13f, 11f);
+            }
+
+            // Saucer body: cx=16, cy=18, rx=14.5, ry=5.8
+            using (var bSaucer = new SolidBrush(Color.FromArgb(126, 34, 206)))
+            {
+                g.FillEllipse(bSaucer, 1.5f, 12.2f, 29f, 11.6f);
+            }
+
+            // Saucer rim highlight: cx=16, cy=17.2, rx=12.5, ry=2.2
+            using (var bRim = new SolidBrush(Color.FromArgb(147, 51, 234)))
+            {
+                g.FillEllipse(bRim, 3.5f, 15f, 25f, 4.4f);
+            }
+        }
+
+        private void DrawMoon(Graphics g)
+        {
+            // 案C: True outer circle with ~70% thickness crescent
+            float cx1 = 16f;
+            float cy1 = 16f;
+            float r1 = 12f;
+
+            float cx2 = 26.5f;
+            float cy2 = 16f;
+            float r2 = 11f;
+
+            float d = cx2 - cx1;
+            float x = (r1 * r1 - r2 * r2 + d * d) / (2f * d);
+            float y = (float)Math.Sqrt(Math.Max(0f, r1 * r1 - x * x));
+
+            float angle1Top = (float)(Math.Atan2(-y, x) * 180.0 / Math.PI);
+            float angle1Bottom = (float)(Math.Atan2(y, x) * 180.0 / Math.PI);
+
+            float x2 = x - d;
+            float angle2Top = (float)(Math.Atan2(-y, x2) * 180.0 / Math.PI);
+            float angle2Bottom = (float)(Math.Atan2(y, x2) * 180.0 / Math.PI);
+
+            float sweep1 = 360f - (angle1Bottom - angle1Top);
+            float a2TopNorm = angle2Top < 0 ? angle2Top + 360f : angle2Top;
+            float sweep2 = -(a2TopNorm - angle2Bottom);
+
+            using (var path = new GraphicsPath())
+            {
+                path.AddArc(cx1 - r1, cy1 - r1, r1 * 2, r1 * 2, angle1Bottom, sweep1);
+                path.AddArc(cx2 - r2, cy2 - r2, r2 * 2, r2 * 2, angle2Top, sweep2);
+                path.CloseFigure();
+
+                using (var brush = new SolidBrush(Color.FromArgb(250, 204, 21))) // #FACC15
+                {
+                    g.FillPath(brush, path);
+                }
+            }
+        }
+
+        private void DrawMuteSlash(Graphics g)
+        {
+            using (var shadowPen = new Pen(Color.FromArgb(160, 0, 0, 0), 4.5f))
+            {
+                g.DrawLine(shadowPen, 4.5f, 4.5f, 27.5f, 27.5f);
+            }
+            using (var pen = new Pen(Color.FromArgb(239, 68, 68), 3f))
+            {
+                g.DrawLine(pen, 4.5f, 4.5f, 27.5f, 27.5f);
             }
         }
 

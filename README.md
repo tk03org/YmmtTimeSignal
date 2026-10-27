@@ -2,8 +2,8 @@
 
 夢限大みゅーたいぷ（ゆめみた）各メンバーの時報ボイスを、指定の間隔（毎時0分など）でランダム再生するWindowsタスクトレイ常駐ツールです。
 
-[![Download ZIP](https://img.shields.io/badge/Download-v1.1.1%20(ZIP)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.1/YmmtTimeSignal_v1.1.1.zip)
-[![Releases](https://img.shields.io/badge/Releases-v1.1.1-0969da?style=for-the-badge)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.1)
+[![Download ZIP](https://img.shields.io/badge/Download-v1.1.2%20(ZIP)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.2/YmmtTimeSignal_v1.1.2.zip)
+[![Releases](https://img.shields.io/badge/Releases-v1.1.2-0969da?style=for-the-badge)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.2)
 
 > [!IMPORTANT]
 > **音声データに関する重要なお知らせ**  
@@ -34,7 +34,9 @@
 - **指定時間停止（スケジュール停止）**：
   - 就寝中や決まった会議時間など、任意の時間帯（または特定時刻）に時報を自動停止可能（最大3枠）。
   - 「含む / 含まない」トグル、日付またぎ対応、特定時刻のみ停止スイッチ、および「1回のみ / 繰り返す」トグルスイッチを搭載。
-  - メニューから各枠をワンクリックでON/OFFでき、停止期間中はトレイアイコン（三日月バッジ）でお知らせ。
+  - メニューから各枠をワンクリックでON/OFFでき、停止期間中はトレイアイコン（黄色い月）でお知らせ。
+- **わかりやすいトレイアイコン**：
+  - 通常時は紫のUFO、指定時間停止中は黄色い月、一時ミュート時は赤斜線を表示。
 - **起動時ボイス再生**：
   - アプリ起動時に、選択中メンバーの中からランダムで起動音（13番）を再生。
 
@@ -56,8 +58,8 @@
 
 最新の実行ファイル（ZIP形式）は以下から直接ダウンロードできます：
 
-- 📥 **[YmmtTimeSignal_v1.1.1.zip をダウンロード](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.1/YmmtTimeSignal_v1.1.1.zip)**
-- 📋 リリースノート・変更履歴は [Releases (v1.1.1)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.1) をご覧ください。
+- 📥 **[YmmtTimeSignal_v1.1.2.zip をダウンロード](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.2/YmmtTimeSignal_v1.1.2.zip)**
+- 📋 リリースノート・変更履歴は [Releases (v1.1.2)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.2) をご覧ください。
 
 ---
 
@@ -77,7 +79,7 @@
 ```
 
 ### 2. 起動
-`YmmtTimeSignal.exe` を起動すると、Windows右下のタスクトレイ（通知領域）に時計アイコンが表示されます。
+`YmmtTimeSignal.exe` を起動すると、Windows右下のタスクトレイ（通知領域）に紫のUFOアイコンが表示されます（指定時間停止中は黄色い月、ミュート時は赤斜線）。
 
 ### 3. 操作方法
 タスクトレイのアイコンを右クリックしてコンテキストメニューから操作します：
@@ -106,6 +108,8 @@
 
 ## バージョン履歴
 
+- **v1.1.2**
+  - アイコンの更新
 - **v1.1.1**
   - 起動音声の追加
 - **v1.1.0**
