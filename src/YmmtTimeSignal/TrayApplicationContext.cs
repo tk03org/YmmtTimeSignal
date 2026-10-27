@@ -62,6 +62,8 @@ namespace YmmtTimeSignal
             UpdateTrayIcon();
             RebuildContextMenu();
 
+            PlayStartupSound();
+
             _clockTimer = new Timer
             {
                 Interval = 1000
@@ -218,6 +220,30 @@ namespace YmmtTimeSignal
             _player.Play(soundFile, _settings.Volume);
         }
 
+        private void PlayStartupSound()
+        {
+            if (_settings.IsMuted) return;
+
+            var candidates = _voiceSets
+                .Where(v => v.IsInstalled &&
+                            _settings.SelectedCharacters.Contains(v.Definition.Prefix) &&
+                            !string.IsNullOrEmpty(v.StartupVoice))
+                .ToList();
+
+            if (candidates.Count == 0)
+            {
+                candidates = _voiceSets
+                    .Where(v => v.IsInstalled && !string.IsNullOrEmpty(v.StartupVoice))
+                    .ToList();
+            }
+
+            if (candidates.Count > 0)
+            {
+                var chosen = candidates[_random.Next(candidates.Count)];
+                _player.Play(chosen.StartupVoice, _settings.Volume);
+            }
+        }
+
         private void ContextMenu_Closing(object sender, ToolStripDropDownClosingEventArgs e)
         {
             if (_preventMenuClose && e.CloseReason == ToolStripDropDownCloseReason.ItemClicked)
@@ -232,7 +258,7 @@ namespace YmmtTimeSignal
             _contextMenu.Items.Clear();
 
             // Header title
-            var titleItem = new ToolStripMenuItem("YmmtTimeSignal v1.1.0")
+            var titleItem = new ToolStripMenuItem("YmmtTimeSignal v1.1.1")
             {
                 Enabled = false,
                 Font = new Font(SystemFonts.MenuFont, FontStyle.Bold)

@@ -21,7 +21,8 @@ namespace YmmtTimeSignal
     {
         public CharacterDef Definition { get; set; }
         public Dictionary<int, string> HourlyVoices { get; } = new Dictionary<int, string>();
-        public bool IsInstalled => HourlyVoices.Count > 0;
+        public string StartupVoice { get; set; }
+        public bool IsInstalled => HourlyVoices.Count > 0 || !string.IsNullOrEmpty(StartupVoice);
 
         public CharacterVoiceSet(CharacterDef definition)
         {
@@ -42,6 +43,10 @@ namespace YmmtTimeSignal
 
         private static readonly Regex TimeSignalPattern = new Regex(
             @"^(?<prefix>[a-zA-Z0-9]+)_時報_(?<hour>[0-9]{1,2})時(_re)?\.wav$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex StartupVoicePattern = new Regex(
+            @"^(?<prefix>[a-zA-Z0-9]+)_13_起動音(_re)?\.wav$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public List<CharacterVoiceSet> Scan(string baseDir)
@@ -81,6 +86,24 @@ namespace YmmtTimeSignal
                         if (!voiceSet.HourlyVoices.ContainsKey(hour))
                         {
                             voiceSet.HourlyVoices[hour] = file;
+                        }
+                    }
+                }
+                else
+                {
+                    var matchStartup = StartupVoicePattern.Match(fileName);
+                    if (matchStartup.Success)
+                    {
+                        var prefix = matchStartup.Groups["prefix"].Value.ToLowerInvariant();
+                        if (!dict.TryGetValue(prefix, out var voiceSet))
+                        {
+                            voiceSet = new CharacterVoiceSet(new CharacterDef(prefix, prefix));
+                            dict[prefix] = voiceSet;
+                        }
+
+                        if (string.IsNullOrEmpty(voiceSet.StartupVoice))
+                        {
+                            voiceSet.StartupVoice = file;
                         }
                     }
                 }
