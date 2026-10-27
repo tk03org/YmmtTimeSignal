@@ -2,8 +2,8 @@
 
 夢限大みゅーたいぷ（ゆめみた）各メンバーの時報ボイスを、指定の間隔（毎時0分など）でランダム再生するWindowsタスクトレイ常駐ツールです。
 
-[![Download ZIP](https://img.shields.io/badge/Download-v1.1.0%20(ZIP)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.0/YmmtTimeSignal_v1.1.0.zip)
-[![Releases](https://img.shields.io/badge/Releases-v1.1.0-0969da?style=for-the-badge)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.0)
+[![Download ZIP](https://img.shields.io/badge/Download-v1.1.1%20(ZIP)-2ea44f?style=for-the-badge&logo=windows)](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.1/YmmtTimeSignal_v1.1.1.zip)
+[![Releases](https://img.shields.io/badge/Releases-v1.1.1-0969da?style=for-the-badge)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.1)
 
 > [!IMPORTANT]
 > **音声データに関する重要なお知らせ**  
@@ -35,6 +35,8 @@
   - 就寝中や決まった会議時間など、任意の時間帯（または特定時刻）に時報を自動停止可能（最大3枠）。
   - 「含む / 含まない」トグル、日付またぎ対応、特定時刻のみ停止スイッチ、および「1回のみ / 繰り返す」トグルスイッチを搭載。
   - メニューから各枠をワンクリックでON/OFFでき、停止期間中はトレイアイコン（三日月バッジ）でお知らせ。
+- **起動時ボイス再生**：
+  - アプリ起動時に、選択中メンバーの中からランダムで起動音（13番）を再生。
 
 ---
 
@@ -54,8 +56,8 @@
 
 最新の実行ファイル（ZIP形式）は以下から直接ダウンロードできます：
 
-- 📥 **[YmmtTimeSignal_v1.1.0.zip をダウンロード](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.0/YmmtTimeSignal_v1.1.0.zip)**
-- 📋 リリースノート・変更履歴は [Releases (v1.1.0)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.0) をご覧ください。
+- 📥 **[YmmtTimeSignal_v1.1.1.zip をダウンロード](https://github.com/tk03org/YmmtTimeSignal/releases/download/v1.1.1/YmmtTimeSignal_v1.1.1.zip)**
+- 📋 リリースノート・変更履歴は [Releases (v1.1.1)](https://github.com/tk03org/YmmtTimeSignal/releases/tag/v1.1.1) をご覧ください。
 
 ---
 
@@ -99,6 +101,17 @@
 - Windows 10 / 11 (64bit)
 - .NET Framework 4.8（Windows 10/11には標準搭載されているため追加導入は不要です）
 
+
+---
+
+## バージョン履歴
+
+- **v1.1.1**
+  - 起動音声の追加
+- **v1.1.0**
+  - おやすみタイマー機能の追加
+- **v1.0.0**
+  - リリース
 
 ---
 
